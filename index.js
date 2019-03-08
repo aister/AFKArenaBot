@@ -7,11 +7,6 @@ const { createCanvas, loadImage } = require('canvas')
 //padding between cards: 5
 //final size: 690 x 405
 
-const canvasSize = [690, 405]
-const canvas = createCanvas(...canvasSize);
-const ctx = canvas.getContext('2d');
-ctx.fillStyle = "black";
-ctx.fillRect(0, 0, ...canvasSize);
 const config = {
   "token" : process.env.TOKEN,
   "adminID" : "184369428002111488",
@@ -42,10 +37,19 @@ Promise.all([ loadDir('./img/Common'), loadDir('./img/Rare'), loadDir('./img/Eli
     if (!msg.content.toLowerCase().startsWith(config.prefix)) return;
     let args = msg.content.slice(config.prefix.length).split(' ');
     if (args[0] == "summon" || args[0] == "companion") {
-      let time = cooldown[args[0]][msg.author.id] - msg.createdTimestamp + 120000;
-      if (args[1] == "10") time += 180000;
+      let timer = 2;
+      let canvasSize = [134, 200]
+      if (args[1] == "10") {
+        canvasSize = [690, 405]
+        timer = 5;
+      }
+      const canvas = createCanvas(...canvasSize);
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = "black";
+      ctx.fillRect(0, 0, ...canvasSize);
+      let time = cooldown[args[0]][msg.author.id] - msg.createdTimestamp + (60000 * timer);
       if (time > 0 && msg.author.id != config.adminID) {
-        msg.channel.send(`You can only use this command once every ${(args[1] == 10) ? 5 : 2} minutes. You can use it again in ${Math.floor(time / 60000)} minutes ${Math.ceil(time / 1000) % 60} seconds`);
+        msg.channel.send(`You can only use this command once every ${timer} minutes. You can use it again in ${Math.floor(time / 60000)} minutes ${Math.ceil(time / 1000) % 60} seconds`);
       } else {
         cooldown[args[0]][msg.author.id] = msg.createdTimestamp;
         let result = [""];
