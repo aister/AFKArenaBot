@@ -24,7 +24,7 @@ const randomArray = function(array) {
   let randomized = Math.round(Math.random() * (array.length - 1));
   return array[randomized];
 }
-const cooldown = { summon: {}, companion: {} };
+const cooldown = { summon: {}, companion: {}, summon10: {}, companion10: {} };
 const summon1 = function() {
 
 }
@@ -38,20 +38,22 @@ Promise.all([ loadDir('./img/Common'), loadDir('./img/Rare'), loadDir('./img/Eli
     let args = msg.content.slice(config.prefix.length).split(' ');
     if (args[0] == "summon" || args[0] == "companion") {
       let timer = 2;
-      let canvasSize = [134, 200]
+      let canvasSize = [134, 200];
+      let speech = "Here is the hero you get for 1";
       if (args[1] == "10") {
+        speech = "Here is the heroes you get for 10";
         canvasSize = [690, 405]
-        timer = 5;
+        timer = 3;
       }
       const canvas = createCanvas(...canvasSize);
       const ctx = canvas.getContext('2d');
       ctx.fillStyle = "black";
       ctx.fillRect(0, 0, ...canvasSize);
-      let time = cooldown[args[0]][msg.author.id] - msg.createdTimestamp + (60000 * timer);
+      let time = cooldown[args[0] + args[1]][msg.author.id] - msg.createdTimestamp + (60000 * timer);
       if (time > 0 && msg.author.id != config.adminID) {
         msg.channel.send(`You can only use this command once every ${timer} minutes. You can use it again in ${Math.floor(time / 60000)} minutes ${Math.ceil(time / 1000) % 60} seconds`);
       } else {
-        cooldown[args[0]][msg.author.id] = msg.createdTimestamp;
+        cooldown[args[0] + args[1]][msg.author.id] = msg.createdTimestamp;
         let result = [""];
         if (args[1] == "10") result = [...new Array(10)];
         result = result.map((i, index) => {
@@ -83,7 +85,7 @@ Promise.all([ loadDir('./img/Common'), loadDir('./img/Rare'), loadDir('./img/Eli
           if (rarity.Common.length) r += `\n#Common\n${rarity.Common.join(', ')}\n`;
           if (rarity.Rare.length) r += `\n#Rare\n${rarity.Rare.join(', ')}\n`;
           if (rarity.Elite.length) r += `\n#Elite\n${rarity.Elite.join(', ')}\n`;
-          msg.channel.send(`The results are in, here are the cards you get:\`\`\`md${r}\`\`\``, {file: {attachment: canvas.toBuffer(), name: "result.png"}});
+          msg.channel.send(`${speech}:\`\`\`md${r}\`\`\``, {file: {attachment: canvas.toBuffer(), name: "result.png"}});
         });
       }
     }
